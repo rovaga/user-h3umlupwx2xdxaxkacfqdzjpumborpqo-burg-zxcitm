@@ -133,10 +133,15 @@ export class Ingredient {
   checkCollision(playerPosition: THREE.Vector3, playerRadius: number): boolean {
     if (this.collected) return false;
 
-    const distance = this.mesh.position.distanceTo(playerPosition);
-    const collectDistance = playerRadius + 0.3;
+    // Calculate horizontal distance (ignore Y difference for easier collection)
+    const dx = this.mesh.position.x - playerPosition.x;
+    const dz = this.mesh.position.z - playerPosition.z;
+    const horizontalDistance = Math.sqrt(dx * dx + dz * dz);
+    
+    // More forgiving collection distance - player just needs to be close horizontally
+    const collectDistance = playerRadius + 0.5;
 
-    if (distance < collectDistance) {
+    if (horizontalDistance < collectDistance) {
       this.collect();
       return true;
     }
