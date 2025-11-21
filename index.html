@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Game - AI Editable</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        canvas {
+            display: block;
+            touch-action: none;
+        }
+
+        #instructions {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        #instructions h3 {
+            margin-top: 0;
+        }
+
+        #instructions ul {
+            margin-bottom: 0;
+            padding-left: 20px;
+        }
+
+        /* Hide instructions on mobile portrait */
+        @media (max-width: 768px) and (orientation: portrait) {
+            #instructions {
+                display: none;
+            }
+        }
+
+        #customer-order {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            display: none;
+            border: 2px solid #ffff00;
+            min-width: 300px;
+            text-align: center;
+        }
+
+        #customer-order.show {
+            display: block;
+        }
+
+        #customer-order h3 {
+            margin-top: 0;
+            color: #ffff00;
+        }
+
+        #customer-order .ingredients-list {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        #customer-order .ingredient-item {
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-transform: capitalize;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #customer-order .ingredient-preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #customer-order .ingredient-preview-canvas {
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        #customer-order .ingredient-label {
+            font-size: 12px;
+            text-transform: capitalize;
+            color: white;
+        }
+
+        #customer-order .instruction {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        #score {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="game-canvas"></canvas>
+    <div id="score">Score: 0</div>
+    <div id="instructions">
+        <h3>Controls</h3>
+        <ul>
+            <li>W/A/S/D - Move</li>
+            <li>SPACE - Jump</li>
+            <li>Mouse - Look around</li>
+            <li>Click to lock pointer</li>
+            <li>E - Deliver order (when near customer)</li>
+        </ul>
+    </div>
+    <div id="customer-order">
+        <h3>Customer Order</h3>
+        <div class="ingredients-list" id="order-ingredients"></div>
+        <div class="instruction">Press E to deliver</div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

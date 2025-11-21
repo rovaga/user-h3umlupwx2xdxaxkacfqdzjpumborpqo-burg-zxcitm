@@ -1,0 +1,2 @@
+# This file ensures the current-game directory is tracked by git
+# even when empty. AI can add assets to this directory freely.
