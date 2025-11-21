@@ -32,6 +32,7 @@ export class Engine {
   private targetFPS: number = 60;
   private frameInterval: number = 1000 / 60; // 60 FPS default
   private lastFrameTime: number = 0;
+  private accumulatedTime: number = 0;
 
   constructor(config: EngineConfig) {
     this.config = config;
@@ -144,6 +145,7 @@ export class Engine {
 
   /**
    * Main render loop.
+   * Uses fixed timestep for consistent physics and better mobile performance.
    */
   private animate = (time: number): void => {
     this.animationId = requestAnimationFrame(this.animate);
@@ -160,20 +162,36 @@ export class Engine {
       return;
     }
 
-    // Frame rate limiting for mobile devices
-    const elapsed = time - this.lastFrameTime;
-    if (elapsed < this.frameInterval) {
-      return; // Skip this frame to maintain target FPS
+    // Initialize lastTime on first frame
+    if (this.lastTime === 0) {
+      this.lastTime = time;
+      this.lastFrameTime = time;
+      return;
     }
-    this.lastFrameTime = time - (elapsed % this.frameInterval);
 
-    // Calculate delta time in seconds
-    const deltaTime = this.lastTime ? (time - this.lastTime) / 1000 : 0;
-    this.lastTime = time;
+    // Calculate elapsed time since last frame
+    const elapsed = time - this.lastFrameTime;
+    
+    // Accumulate time for fixed timestep
+    this.accumulatedTime += elapsed;
+    this.lastFrameTime = time;
 
-    // Update game
-    if (this.game) {
-      this.game.update(deltaTime);
+    // Use fixed timestep for consistent physics (matches target FPS)
+    const fixedDeltaTime = this.frameInterval / 1000; // Convert to seconds
+    const maxFrameTime = fixedDeltaTime * 2; // Cap to prevent large jumps
+
+    // Update game with fixed timestep (multiple updates if needed to catch up)
+    if (this.game && this.accumulatedTime >= this.frameInterval) {
+      // Cap accumulated time to prevent spiral of death
+      if (this.accumulatedTime > maxFrameTime * 1000) {
+        this.accumulatedTime = maxFrameTime * 1000;
+      }
+
+      // Run updates with fixed timestep
+      while (this.accumulatedTime >= this.frameInterval) {
+        this.game.update(fixedDeltaTime);
+        this.accumulatedTime -= this.frameInterval;
+      }
     }
 
     // Reset mouse delta after game update
@@ -184,7 +202,7 @@ export class Engine {
       this.scene.background = new THREE.Color(0x87ceeb);
     }
 
-    // Render
+    // Render (always render, even if we didn't update)
     try {
       this.renderer.render(this.scene, this.camera);
     } catch (error) {
@@ -216,6 +234,7 @@ export class Engine {
     this.game = game;
     this.lastTime = 0;
     this.lastFrameTime = 0;
+    this.accumulatedTime = 0;
     console.log('[Engine] Starting game');
     this.animate(0);
   }
