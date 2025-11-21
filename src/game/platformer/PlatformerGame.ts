@@ -12,12 +12,14 @@ import { Player } from './Player';
 import { Platform } from './Platform';
 import { Ingredient, IngredientType } from './Ingredient';
 import { Customer } from './Customer';
+import { Sword, SwordType } from './Sword';
 
 export class PlatformerGame implements Game {
   private engine: Engine;
   private player: Player;
   private platforms: Platform[] = [];
   private ingredients: Ingredient[] = [];
+  private swords: Sword[] = [];
   private customers: Customer[] = [];
   private currentCustomer: Customer | null = null;
   private score: number = 0;
@@ -39,6 +41,9 @@ export class PlatformerGame implements Game {
 
     // Create ingredients
     this.createIngredients();
+
+    // Create swords
+    this.createSwords();
 
     // Create customers
     this.createCustomers();
@@ -141,6 +146,32 @@ export class PlatformerGame implements Game {
     }
   }
 
+  private createSwords(): void {
+    // Define sword spawn positions (on top of platforms, avoiding ingredient positions)
+    const swordSpawns = [
+      { x: 5, y: 1.75, z: 2, type: SwordType.IRON }, // Near platform at (5, 1, 0)
+      { x: 10, y: 2.75, z: 7, type: SwordType.STEEL }, // Near platform at (10, 2, 5)
+      { x: 0, y: 2.25, z: -6, type: SwordType.GOLD }, // Near platform at (0, 1.5, -8)
+      { x: -8, y: 3.25, z: -3, type: SwordType.DIAMOND }, // Near platform at (-8, 2.5, -5)
+      { x: -5, y: 1.75, z: 10, type: SwordType.IRON }, // Near platform at (-5, 1, 8)
+      { x: 8, y: 3.75, z: -6, type: SwordType.STEEL }, // Near platform at (8, 3, -8)
+      { x: 15, y: 2.25, z: -8, type: SwordType.GOLD }, // Near platform at (15, 1.5, -10)
+      { x: -15, y: 2.75, z: 12, type: SwordType.DIAMOND }, // Near platform at (-15, 2, 10)
+      { x: -12, y: 3.75, z: -10, type: SwordType.IRON }, // Near platform at (-12, 3, -12)
+      { x: 18, y: 3.25, z: 10, type: SwordType.STEEL }, // Near platform at (18, 2.5, 8)
+      { x: 20, y: 1.75, z: 17, type: SwordType.GOLD }, // Near platform at (20, 1, 15)
+      { x: -18, y: 2.25, z: -6, type: SwordType.DIAMOND }, // Near platform at (-18, 1.5, -8)
+    ];
+
+    for (const spawn of swordSpawns) {
+      const sword = new Sword(this.engine, {
+        type: spawn.type,
+        position: new THREE.Vector3(spawn.x, spawn.y, spawn.z),
+      });
+      this.swords.push(sword);
+    }
+  }
+
   private createCustomers(): void {
     // Define customer positions and their orders
     const customerConfigs = [
@@ -204,6 +235,26 @@ export class PlatformerGame implements Game {
           const ingredientHeight = ingredient.getHeight();
           const ingredientType = ingredient.getType();
           this.player.addIngredient(ingredientMesh, ingredientHeight, ingredientType);
+        }
+      }
+    }
+
+    // Update swords
+    for (const sword of this.swords) {
+      if (!sword.isCollected()) {
+        sword.update(deltaTime);
+
+        // Check collision with player
+        const playerPos = this.player.getPosition();
+        const playerRadius = this.player.getRadius();
+        if (sword.checkCollision(playerPos, playerRadius)) {
+          // Add sword to player's collection
+          const swordMesh = sword.createMeshForPlayer();
+          const swordType = sword.getType();
+          this.player.addSword(swordMesh, swordType);
+          // Award bonus points for collecting swords
+          this.addScore(20);
+          console.log(`[PlatformerGame] Collected ${swordType} sword! +20 points`);
         }
       }
     }
@@ -537,6 +588,9 @@ export class PlatformerGame implements Game {
     }
     for (const ingredient of this.ingredients) {
       ingredient.dispose();
+    }
+    for (const sword of this.swords) {
+      sword.dispose();
     }
     for (const customer of this.customers) {
       customer.dispose();

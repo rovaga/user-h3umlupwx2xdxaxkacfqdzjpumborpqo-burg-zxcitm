@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import type { Engine } from '../../engine/Engine';
 import type { Platform } from './Platform';
 import { IngredientType } from './Ingredient';
+import { SwordType } from './Sword';
 
 export class Player {
   private engine: Engine;
@@ -19,6 +20,8 @@ export class Player {
   private collectedIngredients: THREE.Mesh[] = [];
   private collectedIngredientTypes: IngredientType[] = []; // Track ingredient types
   private ingredientStackHeight: number = 0;
+  private collectedSwords: THREE.Group[] = [];
+  private collectedSwordTypes: SwordType[] = []; // Track sword types
 
   // Player state
   private position: THREE.Vector3;
@@ -257,11 +260,47 @@ export class Player {
     this.bunTop.position.y = this.ingredientStackHeight + 0.1;
     this.indicator.position.y = this.ingredientStackHeight + 0.15;
     
+    // Update sword positions after adding ingredient
+    this.updateSwordPositions();
+    
     console.log(`[Player] Added ingredient ${ingredientType}. Stack height: ${this.ingredientStackHeight}`);
   }
 
   getIngredientList(): IngredientType[] {
     return [...this.collectedIngredientTypes];
+  }
+
+  addSword(swordMesh: THREE.Group, swordType: SwordType): void {
+    // Disable shadow casting on mobile for better performance
+    const isMobile = typeof window !== 'undefined' && (window.innerWidth < 768 || 'ontouchstart' in window);
+    swordMesh.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        child.castShadow = !isMobile;
+      }
+    });
+    
+    // Position sword on the side of the player (alternating sides)
+    const swordCount = this.collectedSwords.length;
+    const side = swordCount % 2 === 0 ? 1 : -1; // Alternate left/right
+    const angle = (swordCount * Math.PI / 4); // Spread swords around player
+    
+    swordMesh.position.x = Math.sin(angle) * 0.8 * side;
+    swordMesh.position.z = Math.cos(angle) * 0.8;
+    swordMesh.position.y = this.ingredientStackHeight + 0.3;
+    
+    // Rotate sword to point outward
+    swordMesh.rotation.y = angle + Math.PI / 2;
+    swordMesh.rotation.x = Math.PI / 6; // Slight tilt
+    
+    this.mesh.add(swordMesh);
+    this.collectedSwords.push(swordMesh);
+    this.collectedSwordTypes.push(swordType);
+    
+    console.log(`[Player] Added sword ${swordType}. Total swords: ${this.collectedSwords.length}`);
+  }
+
+  getSwordList(): SwordType[] {
+    return [...this.collectedSwordTypes];
   }
 
   resetIngredients(): void {
@@ -281,7 +320,23 @@ export class Player {
     this.bunTop.position.y = 0.25;
     this.indicator.position.y = 0.25;
     
+    // Update sword positions after ingredient reset
+    this.updateSwordPositions();
+    
     console.log('[Player] Ingredients reset - back to empty bun');
+  }
+
+  private updateSwordPositions(): void {
+    // Reposition all swords after ingredient stack changes
+    for (let i = 0; i < this.collectedSwords.length; i++) {
+      const sword = this.collectedSwords[i];
+      const side = i % 2 === 0 ? 1 : -1;
+      const angle = (i * Math.PI / 4);
+      
+      sword.position.x = Math.sin(angle) * 0.8 * side;
+      sword.position.z = Math.cos(angle) * 0.8;
+      sword.position.y = this.ingredientStackHeight + 0.3;
+    }
   }
 
   getPosition(): THREE.Vector3 {
@@ -305,6 +360,18 @@ export class Player {
     for (const ingredient of this.collectedIngredients) {
       ingredient.geometry.dispose();
       (ingredient.material as THREE.Material).dispose();
+    }
+    
+    // Dispose collected swords
+    for (const sword of this.collectedSwords) {
+      sword.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.geometry.dispose();
+          if (child.material instanceof THREE.Material) {
+            child.material.dispose();
+          }
+        }
+      });
     }
     
     console.log('[Player] Disposed');
