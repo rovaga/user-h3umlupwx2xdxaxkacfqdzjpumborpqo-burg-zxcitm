@@ -15,7 +15,7 @@
 
 import type { Engine } from '../engine/Engine';
 import type { Game } from '../engine/Types';
-import { PlatformerGame } from './platformer/PlatformerGame';
+import { RacingGame } from './racing/RacingGame';
 
 /**
  * Main game creation function.
@@ -25,11 +25,6 @@ import { PlatformerGame } from './platformer/PlatformerGame';
  * @returns A Game instance
  */
 export function createGame(engine: Engine): Game {
-  // You can switch between different games here
-  // For example, based on query params or config:
-  // const params = new URLSearchParams(window.location.search);
-  // const mode = params.get('mode') || 'platformer';
-
-  // For now, we just create the platformer game
-  return new PlatformerGame(engine);
+  // Racing game with burger vehicle
+  return new RacingGame(engine);
 }

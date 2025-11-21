@@ -114,7 +114,7 @@
             color: #aaa;
         }
 
-        #score {
+        #speed {
             position: absolute;
             top: 20px;
             right: 20px;
@@ -125,25 +125,60 @@
             font-size: 18px;
             font-weight: bold;
         }
+
+        #lap {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        #time {
+            position: absolute;
+            top: 140px;
+            right: 20px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        #best-time {
+            position: absolute;
+            top: 200px;
+            right: 20px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <canvas id="game-canvas"></canvas>
-    <div id="score">Score: 0</div>
+    <div id="speed">Speed: 0 km/h</div>
+    <div id="lap">Lap: 1</div>
+    <div id="time">Time: 0.00s</div>
+    <div id="best-time">Best: --</div>
     <div id="instructions">
-        <h3>Controls</h3>
+        <h3>Racing Controls</h3>
         <ul>
-            <li>W/A/S/D - Move</li>
-            <li>SPACE - Jump</li>
+            <li>W/↑ - Accelerate</li>
+            <li>S/↓ - Brake/Reverse</li>
+            <li>A/← - Turn Left</li>
+            <li>D/→ - Turn Right</li>
             <li>Mouse - Look around</li>
             <li>Click to lock pointer</li>
-            <li>E - Deliver order (when near customer)</li>
         </ul>
-    </div>
-    <div id="customer-order">
-        <h3>Customer Order</h3>
-        <div class="ingredients-list" id="order-ingredients"></div>
-        <div class="instruction">Press E to deliver</div>
     </div>
     <script type="module" src="/src/main.ts"></script>
 </body>
